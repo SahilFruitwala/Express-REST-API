@@ -6,13 +6,14 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 
 const feedRoutes = require("./routes/feed");
+const authRoutes = require("./routes/auth");
 
-// ? Constants
+// Constants
 const PORT = process.env.SERVER_PORT || 3333;
 const PASS = process.env.MongoPassword;
 const URI = `mongodb+srv://toor:${PASS}@express-learning.pgj2f.mongodb.net/blog?retryWrites=true&w=majority`;
 
-// ? Other
+// Other
 const app = express();
 
 const fileStorage = multer.diskStorage({
@@ -38,12 +39,12 @@ const upload = multer({ storage: fileStorage, fileFilter: fileFilter }).single(
   "image"
 );
 
-// ? Middlewares
+// Middlewares
 app.use(express.json());
 app.use(upload);
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-// ? General Middlewares/Configurations
+// General Middlewares/Configurations
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -55,15 +56,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// ? Routes
+// Routes
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
 
 app.use((error, req, res, next) => {
   console.log(error);
   const statusCode = error.statusCode || 500;
   const message = error.message;
+  const data = error.data;
 
-  res.status(statusCode).json({ message });
+  res.status(statusCode).json({ message, data });
 });
 
 mongoose
