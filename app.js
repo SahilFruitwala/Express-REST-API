@@ -46,7 +46,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 // General Middlewares/Configurations
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
@@ -72,8 +72,12 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server started on ${PORT}...`);
+    });
+    const io = require("./socket").init(server);
+    io.on("connection", (socket) => {
+      console.log("Client Connected...");
     });
   })
   .catch((err) => console.log(err));
