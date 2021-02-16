@@ -4,9 +4,10 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const { graphqlHTTP } = require("express-graphql");
 
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
+const graphqlSchema = require('./graphql/schema')
+const graphqlResolvers = require('./graphql/resolvers')
 
 // Constants
 const PORT = process.env.SERVER_PORT || 3333;
@@ -57,8 +58,13 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolvers,
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -72,12 +78,8 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
-    const server = app.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`Server started on ${PORT}...`);
-    });
-    const io = require("./socket").init(server);
-    io.on("connection", (socket) => {
-      console.log("Client Connected...");
     });
   })
   .catch((err) => console.log(err));
