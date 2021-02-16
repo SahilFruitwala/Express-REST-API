@@ -6,8 +6,8 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { graphqlHTTP } = require("express-graphql");
 
-const graphqlSchema = require('./graphql/schema')
-const graphqlResolvers = require('./graphql/resolvers')
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolvers = require("./graphql/resolvers");
 
 // Constants
 const PORT = process.env.SERVER_PORT || 3333;
@@ -63,6 +63,17 @@ app.use(
   graphqlHTTP({
     schema: graphqlSchema,
     rootValue: graphqlResolvers,
+    graphiql: true,
+    customFormatErrorFn(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const status = err.originalError.statusCode;
+      const message = err.message || "An error occurred!";
+
+      return { message, status, data };
+    },
   })
 );
 
