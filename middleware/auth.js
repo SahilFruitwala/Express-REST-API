@@ -4,28 +4,24 @@ const jwt = require("jsonwebtoken");
 const JWTSECRET = process.env.JWTSECRET;
 
 module.exports = (req, res, next) => {
-  
   if (!req.get("Authorization")) {
-    const error = new Error("Not Authenticated!");
-    error.statusCode = 401;
-    throw error;
+    req.isAuth = false;
+    return next();
   }
 
   const token = req.get("Authorization").split(" ")[1];
-  
+
   try {
     decodedToken = jwt.verify(token, JWTSECRET);
     if (!decodedToken) {
-      const error = new Error("Not Authenticated!");
-      error.statusCode = 401;
-      throw error;
+      req.isAuth = false;
+      return next();
     }
     req.userId = decodedToken.userId;
+    req.isAuth = true;
     next();
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    throw err;
+    req.isAuth = false;
+    return next();
   }
 };

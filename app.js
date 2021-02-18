@@ -8,6 +8,7 @@ const { graphqlHTTP } = require("express-graphql");
 
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolvers = require("./graphql/resolvers");
+const authMiddleware = require("./middleware/auth");
 
 // Constants
 const PORT = process.env.SERVER_PORT || 3333;
@@ -59,6 +60,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(authMiddleware);
 
 // Routes
 app.use(
