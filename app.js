@@ -10,6 +10,8 @@ const graphqlSchema = require("./graphql/schema");
 const graphqlResolvers = require("./graphql/resolvers");
 const authMiddleware = require("./middleware/auth");
 
+const {clearImage} = require("./utils/file");
+
 // Constants
 const PORT = process.env.SERVER_PORT || 3333;
 const PASS = process.env.MongoPassword;
@@ -62,6 +64,21 @@ app.use((req, res, next) => {
 });
 
 app.use(authMiddleware);
+
+app.put("/post-image", (req, res, next) => {
+  if (!req.isAuth) {
+    throw new Error("User is not authenticated!");
+  }
+  if (!req.file) {
+    return res.status(200).json({ message: "No file provided!" });
+  }
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+  return res
+    .status(201)
+    .json({ message: "file stored!", filePath: req.file.path });
+});
 
 // Routes
 app.use(
