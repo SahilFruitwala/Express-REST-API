@@ -1,16 +1,20 @@
 const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const { graphqlHTTP } = require("express-graphql");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolvers = require("./graphql/resolvers");
 const authMiddleware = require("./middleware/auth");
 
-const {clearImage} = require("./utils/file");
+const { clearImage } = require("./utils/file");
 
 // Constants
 const PORT = process.env.SERVER_PORT || 3333;
@@ -42,6 +46,17 @@ const fileFilter = (req, file, callBack) => {
 const upload = multer({ storage: fileStorage, fileFilter: fileFilter }).single(
   "image"
 );
+
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "access.log"),
+  {
+    flags: "a",
+  }
+);
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan("combined", { stream: accessLogStream }));
 
 // Middlewares
 app.use(express.json());
